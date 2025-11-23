@@ -54,15 +54,6 @@ interface SkillDef {
   dmgMult: number; // Base Damage multiplier
 }
 
-interface MartialArt {
-    id: string;
-    name: string;
-    desc: string;
-    cost: number; // Six Paths Power
-    stats: Partial<Record<StatType, number>>;
-    quality: 'rare' | 'epic' | 'legendary';
-}
-
 interface PlayerStats {
   username: string;
   class: PlayerClass;
@@ -88,12 +79,6 @@ interface PlayerStats {
   godModeAutoEquip?: boolean; // New: Auto equip/sell
   gameSpeed?: number;
   modelOverride?: string; // For God Mode
-  // Reincarnation System
-  reincarnationUnlocked?: boolean;
-  reincarnationPower: number; // +1 per death
-  sixPathsPower: number; // Converted from 10 Reincarnation Power
-  furyEnabled?: boolean; // Double stats for one fight
-  passiveArts: string[]; // Owned Martial Arts IDs
 }
 
 interface LogEntry {
@@ -104,6 +89,8 @@ interface LogEntry {
 }
 
 // --- LOCALIZATION & CONSTANTS ---
+const INVENTORY_CAP = 50;
+
 const QUALITY_CN: Record<ItemQuality, string> = {
   poor: '粗糙',
   common: '普通',
@@ -137,34 +124,26 @@ const SKILL_DB: Record<SkillId, SkillDef> = {
   arcane_blast: { id: 'arcane_blast', name: '奥术冲击', description: '消耗大量法力造成巨额伤害', cost: 30, costType: 'mana', cooldown: 8000, minLevel: 10, reqClass: 'mage', dmgMult: 2.0 },
 };
 
-const MARTIAL_ARTS_DB: MartialArt[] = [
-    { id: 'art_1', name: '易筋经', desc: '少林绝学，强身健体。', cost: 1, stats: { str: 5, sta: 5, agi: 5, int: 5 }, quality: 'rare' },
-    { id: 'art_2', name: '洗髓经', desc: '伐毛洗髓，脱胎换骨。', cost: 5, stats: { str: 20, sta: 20 }, quality: 'rare' },
-    { id: 'art_3', name: '九阳神功', desc: '至刚至阳，内力生生不息。', cost: 10, stats: { str: 50, sta: 50, int: 20 }, quality: 'epic' },
-    { id: 'art_4', name: '九阴真经', desc: '道家极品，包罗万象。', cost: 10, stats: { agi: 50, int: 50, str: 20 }, quality: 'epic' },
-    { id: 'art_5', name: '太玄经', desc: '侠客岛绝学，深不可测。', cost: 50, stats: { str: 200, agi: 200, int: 200, sta: 200 }, quality: 'legendary' },
-];
-
-// --- ICONS ---
+// --- ICONS (Enhanced) ---
 const ICONS = {
   weapon: (
-    <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
-      <path d="M7 21l-4-4 2-2 4 4v-4l9-9 4 4-9 9h-4L7 21zM19.5 5.5l-2-2 1.5-1.5 2 2-1.5 1.5z"/>
+    <svg viewBox="0 0 512 512" fill="currentColor" width="24px" height="24px">
+      <path d="M485.9 80.8c-15.6-26.6-43.9-32.9-74.8-19.8L281.4 134.6l-50.6-29.2c-5.8-3.3-12.8-3.3-18.6 0-5.8 3.3-9.4 9.6-9.4 16.3v62.7l-71.6 41.3c-14.2-12.8-33.1-19.5-52.5-17.9l-22.1 1.8-8.2-21c-4.1-10.4-15.8-15.8-26.2-12s-16.1 15.3-12.6 25.9l12.8 32.8c-12.5 9.7-19.9 24.9-19.9 41.2 0 19.3 10.4 36.3 26.2 45.4l56.5 32.6c5.8 3.3 12.8 3.3 18.6 0 5.8-3.3 9.4-9.6 9.4-16.3v-49.1l87.1-50.3v76.1c0 6.7 3.6 12.9 9.4 16.3 2.9 1.7 6.2 2.5 9.4 2.5 3.2 0 6.5-.8 9.4-2.5l224.2-129.4c16.2-9.4 22.8-28.5 16.5-46.1zM93.3 286.9c-2.4-1.4-4.8-2.6-7.3-3.7l16.8 42.9-28.8-16.6c2.5-13 10.3-24.1 21.6-30.6.2-.1.4-.2.6-.4l-2.9 8.4z"/>
     </svg>
   ),
   head: (
-    <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
-      <path d="M12 2c-4.42 0-8 3.58-8 8v4h2v6h12v-6h2v-4c0-4.42-3.58-8-8-8zm0 2c3.31 0 6 2.69 6 6v2H6v-2c0-3.31 2.69-6 6-6z"/>
+    <svg viewBox="0 0 512 512" fill="currentColor" width="24px" height="24px">
+      <path d="M256 48C141.1 48 48 141.1 48 256v160c0 17.7 14.3 32 32 32h352c17.7 0 32-14.3 32-32V256c0-114.9-93.1-208-208-208zm-16 352h-48v-32h48v32zm32-112h-64v-32h64v32zm0-80h-64v-32h64v32zm48 192h-48v-32h48v32zm48-64h-32v-32h32v32zm0-80h-32v-32h32v32z"/>
     </svg>
   ),
   chest: (
-    <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
-      <path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/>
+    <svg viewBox="0 0 512 512" fill="currentColor" width="24px" height="24px">
+       <path d="M464 64h-48V32c0-17.67-14.33-32-32-32H128c-17.67 0-32 14.33-32 32v32H48C21.49 64 0 85.49 0 112v128c0 53.02 42.98 96 96 96h32v128c0 17.67 14.33 32 32 32h192c17.67 0 32-14.33 32-32V336h32c53.02 0 96-42.98 96-96V112c0-26.51-21.49-48-48-48zm-240 80c0-8.84 7.16-16 16-16s16 7.16 16 16v160h-32V144zm-64 0c0-8.84 7.16-16 16-16s16 7.16 16 16v160h-32V144zm224 96c0 17.67-14.33 32-32 32h-32V128h26.24c3.34 0 6.09 2.51 6.36 5.83l9.33 112zM128 32h256v32H128V32zm-32 96h32v144H96c-17.67 0-32-14.33-32-32V112c0-8.84 7.16-16 16-16zm256 0h32c8.84 0 16 7.16 16 16v128c0 17.67-14.33 32-32 32h-32V128z"/>
     </svg>
   ),
   legs: (
-    <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px">
-      <path d="M19 5H5v14h4v-7h6v7h4V5z"/>
+    <svg viewBox="0 0 512 512" fill="currentColor" width="24px" height="24px">
+      <path d="M208 480V176c0-26.51-21.49-48-48-48H80c-26.51 0-48 21.49-48 48v304c0 17.67 14.33 32 32 32h96c17.67 0 32-14.33 32-32zM432 128h-80c-26.51 0-48 21.49-48 48v304c0 17.67 14.33 32 32 32h96c17.67 0 32-14.33 32-32V176c0-26.51-21.49-48-48-48z"/>
     </svg>
   )
 };
@@ -310,19 +289,6 @@ class IdleWowUtil {
     return `${gold}金 ${silver}银 ${c}铜`;
   }
 
-  static redistributeItemStats(item: Item): Item {
-      if (!item.stats.int || item.stats.int <= 0) return item;
-      const intVal = item.stats.int;
-      const otherStats: StatType[] = ['str', 'agi', 'sta'];
-      const newStats = { ...item.stats };
-      delete newStats.int;
-      for(let i = 0; i < intVal; i++) {
-          const target = IdleWowUtil.pick(otherStats);
-          newStats[target] = (newStats[target] || 0) + 1;
-      }
-      return { ...item, stats: newStats };
-  }
-
   static SLOT_PREFIX = 'idlewow_save_slot_';
 
   static getSlotInfo(index: number) {
@@ -359,11 +325,6 @@ class IdleWowUtil {
         if (mergedPlayer.mana === undefined) mergedPlayer.mana = 0;
         if (mergedPlayer.rage === undefined) mergedPlayer.rage = 0;
         if (mergedPlayer.gameSpeed === undefined) mergedPlayer.gameSpeed = 1;
-        if (mergedPlayer.reincarnationUnlocked === undefined) mergedPlayer.reincarnationUnlocked = false;
-        if (mergedPlayer.reincarnationPower === undefined) mergedPlayer.reincarnationPower = 0;
-        if (mergedPlayer.sixPathsPower === undefined) mergedPlayer.sixPathsPower = 0;
-        if (mergedPlayer.furyEnabled === undefined) mergedPlayer.furyEnabled = false;
-        if (mergedPlayer.passiveArts === undefined) mergedPlayer.passiveArts = [];
         // Migration for mobsKilled. If level > 1 assume not a new char.
         if (mergedPlayer.mobsKilled === undefined) mergedPlayer.mobsKilled = (mergedPlayer.level > 1 ? 10 : 0);
 
@@ -435,12 +396,12 @@ class IdleWowCore {
       username,
       class: 'novice',
       str: 5,
-      agi: 5,
+      agi: 0, // Set to 0 to ensure initial crit rate is 0%
       int: 5,
       sta: 5,
       attributePoints: Math.max(0, (level - 1) * 1), 
       autoAllocMode: 'manual',
-      hp: 50, maxHp: 50, // Fixed: Initialize hp to >0 to prevent instant death
+      hp: 50, maxHp: 50, 
       mana: 50, maxMana: 50,
       rage: 0,
       xp: 0, maxXp: level * 100,
@@ -453,11 +414,7 @@ class IdleWowCore {
       godModeEnabled: username === 'cnm',
       godModeAutoEquip: false,
       gameSpeed: 1,
-      reincarnationUnlocked: false,
-      reincarnationPower: 0,
-      sixPathsPower: 0,
-      furyEnabled: false,
-      passiveArts: []
+      modelOverride: undefined
     };
   }
 
@@ -473,31 +430,15 @@ class IdleWowCore {
       sta += item.stats.sta || 0;
     });
 
-    // Apply Passive Arts Stats
-    base.passiveArts.forEach(artId => {
-        const art = MARTIAL_ARTS_DB.find(a => a.id === artId);
-        if (art) {
-            str += art.stats.str || 0;
-            agi += art.stats.agi || 0;
-            int += art.stats.int || 0;
-            sta += art.stats.sta || 0;
-        }
-    });
-
-    // Apply Fury Multiplier
-    if (base.furyEnabled) {
-        str *= 2;
-        agi *= 2;
-        int *= 2;
-        sta *= 2;
-    }
-
     const maxHp = sta * 10;
     const maxMana = int * 10; 
     const ap = str * 2;
     
-    let critChance = agi * 0.05; 
+    // Updated Logic: 1 Agility = 1% Critical Chance (0.01)
+    let critChance = agi * 0.01; 
     let critDmgMultiplier = 2.0; 
+    
+    // Overflow Logic: Excess Crit Rate adds to Crit Damage
     if (critChance > 1.0) {
         const excess = critChance - 1.0;
         critDmgMultiplier += excess; 
@@ -554,8 +495,6 @@ class IdleWowCore {
         score: 0
     };
     
-    if (godMode) item = IdleWowUtil.redistributeItemStats(item);
-    
     item.score = IdleWowCore.calculateItemScore(item);
 
     return item;
@@ -597,6 +536,7 @@ const CombatScene = ({ mobTemplate, playerClass, playerModelOverride, playerAtta
             head.position.y = 1.8;
             const staffGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 8);
             const staff = new THREE.Mesh(staffGeo, new THREE.MeshStandardMaterial({ color: 0x8b4513 }));
+            staff.name = 'weapon'; // Identify weapon for animation
             staff.position.set(0.6, 1, 0.5);
             staff.rotation.x = Math.PI / 8;
             const orbGeo = new THREE.SphereGeometry(0.15);
@@ -613,6 +553,7 @@ const CombatScene = ({ mobTemplate, playerClass, playerModelOverride, playerAtta
             head.position.y = 1.8;
             const swordGeo = new THREE.BoxGeometry(0.2, 1.8, 0.1);
             const sword = new THREE.Mesh(swordGeo, new THREE.MeshStandardMaterial({ color: 0xc0c0c0 }));
+            sword.name = 'weapon'; // Identify weapon for animation
             sword.position.set(0.7, 1, 0.5);
             sword.rotation.x = Math.PI / 4;
             group.add(body, head, sword);
@@ -625,6 +566,7 @@ const CombatScene = ({ mobTemplate, playerClass, playerModelOverride, playerAtta
             head.position.y = 1.7;
             const swordGeo = new THREE.BoxGeometry(0.1, 1.2, 0.1);
             const sword = new THREE.Mesh(swordGeo, new THREE.MeshStandardMaterial({ color: 0xeeeeee }));
+            sword.name = 'weapon'; // Identify weapon for animation
             sword.position.set(0.6, 1, 0.5);
             sword.rotation.x = Math.PI / 4;
             group.add(body, head, sword);
@@ -708,11 +650,29 @@ const CombatScene = ({ mobTemplate, playerClass, playerModelOverride, playerAtta
   useEffect(() => {
     if(playerGroup.current && playerAttackAnim) {
       const originalX = -2.5;
+      const weapon = playerGroup.current.getObjectByName('weapon');
+      const originalRot = weapon ? weapon.rotation.x : 0;
+      
       let start = Date.now();
       const anim = setInterval(() => {
           const delta = Date.now() - start;
-          if (delta > 300) { if(playerGroup.current) playerGroup.current.position.x = originalX; clearInterval(anim); } 
-          else if (playerGroup.current) { const offset = delta < 150 ? (delta/150)*1.5 : (1-(delta-150)/150)*1.5; playerGroup.current.position.x = originalX + offset; }
+          if (delta > 300) { 
+              if(playerGroup.current) playerGroup.current.position.x = originalX; 
+              if(weapon) weapon.rotation.x = originalRot;
+              clearInterval(anim); 
+          } 
+          else if (playerGroup.current) { 
+              // Move Forward Logic
+              const progress = delta < 150 ? (delta/150) : (1-(delta-150)/150);
+              const offset = progress * 1.5; 
+              playerGroup.current.position.x = originalX + offset;
+              
+              // Weapon Swing Logic
+              if (weapon) {
+                  // Swing down by 90 degrees (PI/2) at peak
+                  weapon.rotation.x = originalRot - (progress * Math.PI / 2);
+              }
+          }
       }, 16);
     }
   }, [playerAttackAnim]);
@@ -756,7 +716,6 @@ const App = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showGodToggleModal, setShowGodToggleModal] = useState(false);
   const [showClassModal, setShowClassModal] = useState(false);
-  const [showReincarnationModal, setShowReincarnationModal] = useState(false);
 
   const derivedStats = IdleWowCore.calculateCombatStats(player, equipment);
   const isGod = player.username === 'cnm';
@@ -917,12 +876,6 @@ const App = () => {
         if (currentMob.hp <= 0) {
           addLog(`${currentMob.template.name} 死亡。`, 'sys');
           
-          // Disable Fury if active
-          if (player.furyEnabled) {
-              setPlayer(p => ({ ...p, furyEnabled: false }));
-              addLog('狂怒效果已消散。', 'sys');
-          }
-
           const xpGain = currentMob.template.xpGiven * (currentMob.template.isBoss ? 2 : 1);
           const goldGain = IdleWowUtil.randInt(1, 5) * currentMob.template.level * (currentMob.template.isBoss ? 5 : 1);
 
@@ -990,7 +943,7 @@ const App = () => {
                 }
             } else {
                 setInventory(inv => {
-                    if(inv.length < 20) return [...inv, loot];
+                    if(inv.length < INVENTORY_CAP) return [...inv, loot];
                     addLog('背包已满!', 'sys');
                     return inv;
                 });
@@ -1002,60 +955,16 @@ const App = () => {
         }
 
         if (player.hp <= 0) {
-             // DEATH PENALTY LOGIC
+             // DEATH LOGIC
              setPlayer(p => {
-                 let newLvl = Math.max(1, p.level - 1);
-                 let newMaxXp = newLvl * 100;
-                 let newAttPts = p.attributePoints;
-                 let newStr = p.str, newAgi = p.agi, newInt = p.int, pSta = p.sta;
-
-                 // Revoke Attribute Point
-                 if (p.level > 1) {
-                     if (newAttPts > 0) {
-                         newAttPts--;
-                     } else {
-                         // Remove from highest stat if no unspent points
-                         const stats = [{k: 'str', v: p.str}, {k: 'agi', v: p.agi}, {k: 'int', v: p.int}, {k: 'sta', v: p.sta}];
-                         stats.sort((a,b) => b.v - a.v);
-                         const target = stats[0].k;
-                         if (target === 'str') newStr = Math.max(5, newStr - 1);
-                         else if (target === 'agi') newAgi = Math.max(5, newAgi - 1);
-                         else if (target === 'int') newInt = Math.max(5, newInt - 1);
-                         else if (target === 'sta') pSta = Math.max(5, pSta - 1);
-                     }
-                 }
-                 
-                 // Reincarnation Logic
-                 let reincarnated = p.reincarnationUnlocked;
-                 if (!reincarnated) {
-                     setShowReincarnationModal(true);
-                     reincarnated = true;
-                     IdleWowAudio.playSfx('gong');
-                 }
-
                  return {
                      ...p,
-                     level: newLvl,
-                     maxXp: newMaxXp,
-                     // xp: 0, // REMOVED: Keep XP on death
                      hp: derivedStats.maxHp, // Revive
-                     attributePoints: newAttPts,
-                     str: newStr, agi: newAgi, int: newInt, sta: pSta,
-                     reincarnationUnlocked: reincarnated,
-                     reincarnationPower: p.reincarnationPower + 1,
-                     furyEnabled: false // Reset fury on death
                  };
              });
 
-             // ZONE REGRESSION
-             const currentZoneIndex = ZONES.findIndex(z => z.id === zone.id);
-             if (currentZoneIndex > 0) {
-                 const prevZone = ZONES[currentZoneIndex - 1];
-                 setZone(prevZone);
-                 addLog(`你死亡了! 等级下降至 ${Math.max(1, player.level - 1)}，撤退至 ${prevZone.name}`, 'sys');
-             } else {
-                 addLog(`你死亡了! 等级下降至 ${Math.max(1, player.level - 1)}`, 'sys');
-             }
+             // REMOVED ZONE REGRESSION logic
+             addLog(`你力竭倒下了! 在原地休息片刻后重新站了起来。`, 'sys');
              
              IdleWowAudio.playSfx('death');
              return { mob: null, pAnim, mAnim };
@@ -1066,7 +975,7 @@ const App = () => {
     }, tickRate); 
 
     return () => clearInterval(interval);
-  }, [appMode, zone, derivedStats, player.godModeEnabled, player.godModeAutoEquip, player.gameSpeed, equipment, player.autoAllocMode, player.furyEnabled, showWelcomeModal]); 
+  }, [appMode, zone, derivedStats, player.godModeEnabled, player.godModeAutoEquip, player.gameSpeed, equipment, player.autoAllocMode, showWelcomeModal]); 
 
   // --- UI HANDLERS ---
   const changeClass = (newClass: PlayerClass) => {
@@ -1120,7 +1029,7 @@ const App = () => {
                    }
                } else {
                    setInventory(inv => {
-                      if(inv.length < 20) return [...inv, loot];
+                      if(inv.length < INVENTORY_CAP) return [...inv, loot];
                       addLog('背包已满!', 'sys');
                       return inv;
                    });
@@ -1182,45 +1091,12 @@ const App = () => {
       }
   };
 
-  const activateFury = () => {
-      if (player.reincarnationPower >= 10) {
-          setPlayer(p => ({
-              ...p,
-              reincarnationPower: p.reincarnationPower - 10,
-              sixPathsPower: p.sixPathsPower + 1,
-              furyEnabled: true
-          }));
-          addLog('>>> 轮回爆发! 狂怒模式开启! 下一场战斗属性翻倍! <<<', 'sys');
-          IdleWowAudio.playSfx('gong');
-      } else {
-          addLog('轮回之力不足!', 'sys');
-      }
-  };
-
-  const buyMartialArt = (art: MartialArt) => {
-      if (player.sixPathsPower >= art.cost) {
-          if (player.passiveArts.includes(art.id)) {
-              addLog('你已经学会了这个内功。', 'sys');
-              return;
-          }
-          setPlayer(p => ({
-              ...p,
-              sixPathsPower: p.sixPathsPower - art.cost,
-              passiveArts: [...p.passiveArts, art.id]
-          }));
-          addLog(`习得内功: [${art.name}]`, 'sys');
-          IdleWowAudio.playSfx('levelup');
-      } else {
-          addLog('六道轮回之力不足!', 'sys');
-      }
-  };
-
   // --- RENDER ---
   if (appMode === 'slot-select') {
     return (
       <div className="slot-screen">
           <h1 className="login-title">选择存档</h1>
-          <div style={{color: '#666', marginBottom: '20px'}}>IdleWow v2.5 - 华夏轮回系统</div>
+          <div style={{color: '#666', marginBottom: '20px'}}>IdleWow v2.6 - 休闲放置版</div>
           <div className="save-slots-container">
             {[0, 1, 2].map(i => {
                 const info = IdleWowUtil.getSlotInfo(i);
@@ -1301,8 +1177,8 @@ const App = () => {
                         <div style={{color: '#ddd', lineHeight: '1.8', textAlign: 'left', fontSize: '14px', padding: '0 10px'}}>
                             <p>勇敢的冒险者 <span style={{color: '#fff', fontWeight: 'bold'}}>{player.username}</span>：</p>
                             <p>前方充满了未知的危险与机遇。握紧你的武器，去征服这片狂野的大陆吧！</p>
-                            <p style={{color: '#a335ee', marginTop: '15px', fontSize: '12px'}}>
-                                <em>注意：死亡并非终结。当你第一次倒下时，古老的【轮回系统】将会觉醒...</em>
+                            <p style={{color: '#aaa', marginTop: '15px', fontSize: '12px'}}>
+                                <em>提示：已为你移除了死亡惩罚，请尽情享受战斗的乐趣。</em>
                             </p>
                         </div>
                         <button className="wow-btn" style={{marginTop: '20px', minWidth: '120px'}} onClick={() => setShowWelcomeModal(false)}>
@@ -1312,22 +1188,6 @@ const App = () => {
                 )}
             </div>
         </div>
-      )}
-      
-      {showReincarnationModal && (
-          <div className="modal-overlay">
-              <div className="modal-content god-modal" style={{borderColor: '#a335ee', boxShadow: '0 0 50px rgba(163, 53, 238, 0.3)'}}>
-                  <h2 style={{color: '#a335ee', fontFamily: 'KaiTi, serif'}}>
-                      {isGod ? '真神归位' : '华夏轮回'}
-                  </h2>
-                  <p style={{lineHeight: '1.6', fontSize: '14px', color: '#ddd'}}>
-                      {isGod ? 
-                          '尊贵的真神，死亡无法束缚您的意志。轮回系统已为您开启，请使用轮回之力主宰六道。' : 
-                          '凡人，死亡并非终结，而是新的开始。你触发了古老的华夏轮回系统，去掌握轮回之力，逆天改命吧。'}
-                  </p>
-                  <button className="wow-btn" onClick={() => setShowReincarnationModal(false)}>接受命运</button>
-              </div>
-          </div>
       )}
 
       {showGodToggleModal && (
@@ -1404,7 +1264,14 @@ const App = () => {
          </div>
          <div style={{textAlign: 'right'}}>
              <div className="gold-text">{IdleWowUtil.formatMoney(player.gold)}</div>
-             <button className="wow-btn secondary" onClick={() => {IdleWowUtil.saveToSlot(currentSlot, { player, equipment, inventory, zoneId: zone.id }); setAppMode('slot-select');}}>退出</button>
+             <div style={{marginTop: '5px'}}>
+                 <button className="wow-btn" style={{marginRight: '10px', padding: '5px 10px', fontSize: '12px'}} onClick={() => {
+                     IdleWowUtil.saveToSlot(currentSlot, { player, equipment, inventory, zoneId: zone.id });
+                     addLog('游戏存档已保存。', 'sys');
+                     IdleWowAudio.playSfx('click');
+                 }}>保存游戏</button>
+                 <button className="wow-btn secondary" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => {IdleWowUtil.saveToSlot(currentSlot, { player, equipment, inventory, zoneId: zone.id }); setAppMode('slot-select');}}>退出</button>
+             </div>
          </div>
       </div>
 
@@ -1430,21 +1297,18 @@ const App = () => {
               {['char', 'skills', 'shop', 'map'].map(t => (
                   <div key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>{t === 'char' ? '角色' : t === 'skills' ? '技能' : t === 'shop' ? '商店' : '地图'}</div>
               ))}
-              {player.reincarnationUnlocked && (
-                  <div className={`tab ${activeTab === 'samsara' ? 'active' : ''}`} style={{color: '#a335ee'}} onClick={() => setActiveTab('samsara')}>轮回</div>
-              )}
           </div>
           <div className="tab-content">
               {activeTab === 'char' && (
                   <div className="char-sheet">
                       <div className="stats-block wow-panel" style={{padding: '10px'}}>
                           <div style={{marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                              <span style={{color: '#ffd100'}}>属性 {player.furyEnabled && <span style={{color: 'red', fontWeight: 'bold', fontSize: '12px'}}>(狂怒生效中!)</span>}</span>
+                              <span style={{color: '#ffd100'}}>属性</span>
                               {player.level >= 10 && player.class === 'novice' && <button className="wow-btn" style={{fontSize: '10px'}} onClick={() => setShowClassModal(true)}>转职</button>}
                           </div>
                           
                           {(['str', 'agi', 'int', 'sta'] as StatType[]).map(stat => (
-                              <div key={stat} className="stat-row" onMouseEnter={e => showTooltip(e, {str:"提高攻击强度 (AP)。\n每 1 点力量增加 2 点近战攻击强度。", agi:"提高暴击几率。\n每 20 点敏捷增加 1% 暴击率。\n暴击率超过 100% 后，溢出部分转化为暴击伤害。", int:"提高法力值上限。\n每 1 点智力增加 10 点法力值。", sta:"提高生命值上限。\n每 1 点耐力增加 10 点生命值。"}[stat])} onMouseLeave={hideTooltip}>
+                              <div key={stat} className="stat-row" onMouseEnter={e => showTooltip(e, {str:"提高攻击强度 (AP)。\n每 1 点力量增加 2 点近战攻击强度。", agi:"提高暴击几率。\n每 1 点敏捷增加 1% 暴击率。\n暴击率超过 100% 后，溢出部分转化为暴击伤害。", int:"提高法力值上限。\n每 1 点智力增加 10 点法力值。", sta:"提高生命值上限。\n每 1 点耐力增加 10 点生命值。"}[stat])} onMouseLeave={hideTooltip}>
                                   <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center'}}>
                                       <span>{{str:'力量',agi:'敏捷',int:'智力',sta:'耐力'}[stat]}</span>
                                       <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
@@ -1487,16 +1351,18 @@ const App = () => {
                               <div>DPS: {derivedStats.dps.toFixed(1)}</div>
                               <div>暴击率: {(derivedStats.crit * 100).toFixed(2)}%</div>
                               <div>暴击伤害: {(derivedStats.critDmg * 100).toFixed(0)}%</div>
-                              {player.reincarnationUnlocked && <div style={{color: '#a335ee'}}>轮回之力: {player.reincarnationPower}</div>}
                           </div>
                       </div>
                       
                       <div style={{flex: 1}}>
-                          <div style={{marginBottom: '5px', color: '#888'}}>装备</div>
+                          <div style={{marginBottom: '5px', color: '#888', display: 'flex', justifyContent: 'space-between'}}>
+                             <span>装备</span>
+                             <span style={{color: inventory.length >= INVENTORY_CAP ? 'red' : '#aaa'}}>背包: {inventory.length} / {INVENTORY_CAP}</span>
+                          </div>
                           <div style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
                               {(['head', 'chest', 'legs', 'weapon'] as ItemSlot[]).map(slot => (
                                   <div key={slot} className={`item-slot ${equipment[slot]?.quality || ''}`} onMouseEnter={e => equipment[slot] && showTooltip(e, IdleWowCore.formatItemStats(equipment[slot]!))} onMouseLeave={hideTooltip}>
-                                      <div className="item-icon" style={{opacity: equipment[slot] ? 1 : 0.3}}>
+                                      <div className="item-icon" style={{opacity: equipment[slot] ? 1 : 0.3, color: equipment[slot] ? 'inherit' : '#555'}}>
                                           {ICONS[slot]}
                                       </div>
                                   </div>
@@ -1505,7 +1371,7 @@ const App = () => {
                           <div className="inventory-grid">
                               {inventory.map(item => (
                                   <div key={item.id} className={`item-slot ${item.quality}`} onClick={() => equipItem(item)} onMouseEnter={e => showTooltip(e, IdleWowCore.formatItemStats(item))} onMouseLeave={hideTooltip} onContextMenu={e => {e.preventDefault(); setPlayer(p=>({...p, gold: p.gold+item.value})); setInventory(inv=>inv.filter(i=>i.id!==item.id));}}>
-                                      <div className="item-icon">{ICONS[item.slot]}</div>
+                                      <div className="item-icon" style={{transform: 'scale(0.8)'}}>{ICONS[item.slot]}</div>
                                   </div>
                               ))}
                           </div>
@@ -1592,49 +1458,6 @@ const App = () => {
                               <div style={{color: '#888'}}>Lv{z.minLevel}-{z.maxLevel}</div>
                           </div>
                       ))}
-                  </div>
-              )}
-
-              {activeTab === 'samsara' && (
-                  <div style={{width: '100%'}}>
-                      <div style={{textAlign: 'center', marginBottom: '20px', padding: '10px', borderBottom: '1px solid #333'}}>
-                          <div style={{fontSize: '18px', color: '#aaa'}}>轮回之力: <span style={{color: '#fff', fontSize: '24px'}}>{player.reincarnationPower}</span></div>
-                          <div style={{fontSize: '18px', color: '#a335ee'}}>六道轮回之力: <span style={{color: '#fff', fontSize: '24px'}}>{player.sixPathsPower}</span></div>
-                          
-                          <div style={{marginTop: '15px'}}>
-                              <button className="wow-btn" style={{background: 'linear-gradient(to bottom, #440000 0%, #220000 100%)', borderColor: '#ff0000'}} onClick={activateFury} disabled={player.reincarnationPower < 10}>
-                                  开启狂怒 (消耗10点轮回之力)
-                              </button>
-                              <div style={{fontSize: '12px', color: '#888', marginTop: '5px'}}>
-                                  消耗10点轮回之力，获得1点六道轮回之力，并使下一场战斗全属性翻倍。
-                              </div>
-                          </div>
-                      </div>
-
-                      <h3 style={{color: '#a335ee', borderBottom: '1px solid #444', paddingBottom: '5px'}}>武侠内功</h3>
-                      <div style={{display: 'flex', gap: '15px', flexWrap: 'wrap'}}>
-                          {MARTIAL_ARTS_DB.map(art => {
-                              const owned = player.passiveArts.includes(art.id);
-                              return (
-                                  <div key={art.id} className={`wow-panel ${owned ? 'owned' : ''}`} style={{padding: '15px', width: '220px', borderColor: owned ? '#0f0' : '#a335ee'}}>
-                                      <div style={{color: owned ? '#0f0' : '#d28eff', fontWeight: 'bold', fontSize: '16px'}}>{art.name}</div>
-                                      <div style={{color: '#aaa', fontSize: '12px', marginBottom: '10px', fontStyle: 'italic'}}>{art.desc}</div>
-                                      <div style={{fontSize: '12px', color: '#fff'}}>
-                                          {Object.entries(art.stats).map(([k, v]) => <div key={k}>+{v} {k === 'str' ? '力量' : k === 'agi' ? '敏捷' : k === 'int' ? '智力' : '耐力'}</div>)}
-                                      </div>
-                                      <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #333'}}>
-                                          {owned ? (
-                                              <div style={{color: '#0f0', textAlign: 'center'}}>已习得</div>
-                                          ) : (
-                                              <button className="wow-btn secondary" style={{width: '100%'}} onClick={() => buyMartialArt(art)} disabled={player.sixPathsPower < art.cost}>
-                                                  参悟 (消耗 {art.cost} 六道之力)
-                                              </button>
-                                          )}
-                                      </div>
-                                  </div>
-                              );
-                          })}
-                      </div>
                   </div>
               )}
           </div>
