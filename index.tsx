@@ -1529,7 +1529,7 @@ const App = () => {
                                   <div key={skill.id} className="wow-panel" style={{padding: '10px', width: '200px', opacity: player.level >= skill.minLevel ? 1 : 0.5}}>
                                       <div style={{color: '#fff', fontWeight: 'bold'}}>{skill.name} <span style={{fontSize: '10px', color: '#aaa'}}>Lv{rank}</span></div>
                                       <div style={{fontSize: '12px', color: '#aaa', margin: '5px 0'}}>{skill.description}</div>
-                                      <div style={{fontSize: '11px', color: '#888'}}>伤害倍率: {(currentMult * 100).toFixed(0)}% {rank > 0 && <span style={{color: '#0f0'}}>-> {(nextMult * 100).toFixed(0)}%</span>}</div>
+                                      <div style={{fontSize: '11px', color: '#888'}}>伤害倍率: {(currentMult * 100).toFixed(0)}% {rank > 0 && <span style={{color: '#0f0'}}>&rarr; {(nextMult * 100).toFixed(0)}%</span>}</div>
                                       <div style={{fontSize: '11px', color: skill.costType === 'rage' ? '#ff3333' : '#00ccff'}}>消耗: {skill.costType === 'mana' ? `${skill.cost}% 法力` : `${skill.cost} 怒气`}</div>
                                       {player.skillPoints > 0 && player.level >= skill.minLevel && (
                                           <button className="wow-btn" style={{marginTop: '10px', width: '100%'}} onClick={() => learnSkill(skill.id)}>升级</button>
